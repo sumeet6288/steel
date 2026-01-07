@@ -107,18 +107,27 @@ export const ConnectionDesignerPage = () => {
     setExporting(true);
     try {
       const response = await connectionsAPI.exportTekla(connectionId);
-      const blob = new Blob([JSON.stringify(response.data.tekla_export, null, 2)], {
+      
+      // Create downloadable file
+      const teklaData = response.data.tekla_export || response.data;
+      const blob = new Blob([JSON.stringify(teklaData, null, 2)], {
         type: 'application/json',
       });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${connection.name}_tekla_export.json`;
+      a.download = `${connection.name.replace(/\s+/g, '_')}_tekla_export.json`;
+      document.body.appendChild(a);
       a.click();
-      toast.success('Exported to Tekla format');
-      loadConnection();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Exported to Tekla format ✓');
+      await loadConnection();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Export failed');
+      const errorMsg = error.response?.data?.detail || error.response?.data?.message || 'Export failed';
+      toast.error(errorMsg);
+      console.error('Export error:', error);
     } finally {
       setExporting(false);
     }
