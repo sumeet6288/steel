@@ -395,11 +395,11 @@ export const ConnectionDesignerPage = () => {
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium">{check.rule_name}</span>
                                   <Badge className={`text-xs ${
-                                    check.status === 'PASS' ? 'bg-green-100 text-green-700' :
-                                    check.status === 'FAIL' ? 'bg-red-100 text-red-700' :
+                                    check.status === 'pass' ? 'bg-green-100 text-green-700' :
+                                    check.status === 'fail' ? 'bg-red-100 text-red-700' :
                                     'bg-orange-100 text-orange-700'
                                   }`}>
-                                    {check.status}
+                                    {check.status.toUpperCase()}
                                   </Badge>
                                 </div>
                                 <div className="text-xs mt-1 text-slate-600">{check.message}</div>
