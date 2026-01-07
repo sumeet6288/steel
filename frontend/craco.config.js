@@ -61,6 +61,14 @@ const webpackConfig = {
         ],
       };
 
+      // Disable fast refresh to avoid core-js-pure compatibility issues
+      const fastRefreshPluginIndex = webpackConfig.plugins.findIndex(
+        plugin => plugin.constructor.name === 'ReactRefreshPlugin'
+      );
+      if (fastRefreshPluginIndex !== -1) {
+        webpackConfig.plugins.splice(fastRefreshPluginIndex, 1);
+      }
+
       // Add health check plugin to webpack if enabled
       if (config.enableHealthCheck && healthPluginInstance) {
         webpackConfig.plugins.push(healthPluginInstance);
