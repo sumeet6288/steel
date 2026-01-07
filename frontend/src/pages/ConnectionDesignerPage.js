@@ -279,14 +279,14 @@ export const ConnectionDesignerPage = () => {
               <CardHeader>
                 <CardTitle>Connection Parameters</CardTitle>
                 <CardDescription>
-                  Enter the design parameters for this {getConnectionTypeLabel(connection.connection_type)} connection
+                  Enter the design parameters for this {getConnectionTypeLabel(connection.connection_type)} connection. All fields marked with * are required.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {getParameterFields(connection.connection_type).map((field) => (
                     <div key={field.key} className="grid gap-2">
-                      <Label htmlFor={field.key}>
+                      <Label htmlFor={field.key} className="text-sm font-medium">
                         {field.label}
                         {field.required && <span className="text-red-500 ml-1">*</span>}
                       </Label>
@@ -295,17 +295,39 @@ export const ConnectionDesignerPage = () => {
                         type="number"
                         step={field.step || '0.1'}
                         value={parameters[field.key] || ''}
-                        onChange={(e) => handleParameterChange(field.key, parseFloat(e.target.value))}
+                        onChange={(e) => handleParameterChange(field.key, parseFloat(e.target.value) || '')}
                         placeholder={field.placeholder}
+                        className={`${!parameters[field.key] && field.required ? 'border-orange-300' : ''}`}
                       />
-                      {field.unit && (
-                        <span className="text-xs text-slate-500">{field.unit}</span>
-                      )}
+                      <div className="flex items-center justify-between">
+                        {field.unit && (
+                          <span className="text-xs text-slate-500">{field.unit}</span>
+                        )}
+                        {!parameters[field.key] && field.required && (
+                          <span className="text-xs text-orange-600">Required field</span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
-                <div className="mt-6 flex justify-end">
-                  <Button onClick={handleSaveParameters} className="bg-slate-900 text-white">
+                
+                {/* Parameter validation status */}
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-sm">
+                  <div className="text-xs text-blue-800">
+                    <strong>💡 Tip:</strong> Fill in all required parameters (*) before running validation. AISC 360-16 checks require complete parameter sets.
+                  </div>
+                </div>
+
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="text-xs text-slate-600">
+                    {Object.keys(parameters).length} parameter(s) entered
+                  </div>
+                  <Button 
+                    onClick={handleSaveParameters} 
+                    className="bg-slate-900 text-white hover:bg-slate-800"
+                    disabled={Object.keys(parameters).length === 0}
+                  >
+                    <CheckCircle2 size={16} className="mr-2" />
                     Save Parameters
                   </Button>
                 </div>
