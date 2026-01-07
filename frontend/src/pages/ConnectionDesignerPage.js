@@ -291,7 +291,7 @@ export const ConnectionDesignerPage = () => {
                   <Alert>
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
-                      Connection has not been validated yet. Click "Validate" to run AISC 360 checks.
+                      Connection has not been validated yet. Click &quot;Validate&quot; to run AISC 360 checks.
                     </AlertDescription>
                   </Alert>
                 ) : (
