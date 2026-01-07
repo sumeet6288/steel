@@ -72,8 +72,8 @@ export const auditAPI = {
 };
 
 export const aiAPI = {
-  suggestConnection: (requirements) => api.post('/ai/suggest-connection/', requirements),
-  generateRFI: (connectionData, issue) => api.post('/ai/generate-rfi/', { connection_data: connectionData, issue }),
+  suggestConnection: (requirements) => api.post('/ai/suggest-connection', requirements),
+  generateRFI: (connectionData, issue) => api.post('/ai/generate-rfi', { connection_data: connectionData, issue }),
 };
 
 export default api;
