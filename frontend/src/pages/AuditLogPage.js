@@ -45,11 +45,7 @@ export const AuditLogPage = () => {
   const [loading, setLoading] = useState(true);
   const [limit, setLimit] = useState(50);
 
-  useEffect(() => {
-    loadAuditLogs();
-  }, [limit]);
-
-  const loadAuditLogs = async () => {
+  const loadAuditLogs = useCallback(async () => {
     try {
       const response = await auditAPI.getMyActivity(limit);
       setLogs(response.data);
@@ -58,7 +54,11 @@ export const AuditLogPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [limit]);
+
+  useEffect(() => {
+    loadAuditLogs();
+  }, [loadAuditLogs]);
 
   const getActionIcon = (action) => {
     const Icon = ACTION_ICONS[action] || FileText;
