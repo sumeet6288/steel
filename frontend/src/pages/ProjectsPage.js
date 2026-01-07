@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { projectsAPI } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -12,6 +12,7 @@ import { formatDate } from '../lib/utils';
 
 export const ProjectsPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -25,7 +26,13 @@ export const ProjectsPage = () => {
 
   useEffect(() => {
     loadProjects();
-  }, []);
+    // Check if we should open create dialog
+    if (location.state?.openCreateDialog) {
+      setIsCreateOpen(true);
+      // Clear the state
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location]);
 
   const loadProjects = async () => {
     try {
