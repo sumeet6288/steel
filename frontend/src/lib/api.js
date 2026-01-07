@@ -36,11 +36,11 @@ export const authAPI = {
 };
 
 export const projectsAPI = {
-  create: (data) => api.post('/projects', data),
-  getAll: () => api.get('/projects'),
-  getById: (id) => api.get(`/projects/${id}`),
-  update: (id, data) => api.put(`/projects/${id}`, data),
-  delete: (id) => api.delete(`/projects/${id}`),
+  create: (data) => api.post('/projects/', data),
+  getAll: () => api.get('/projects/'),
+  getById: (id) => api.get(`/projects/${id}/`),
+  update: (id, data) => api.put(`/projects/${id}/`, data),
+  delete: (id) => api.delete(`/projects/${id}/`),
 };
 
 export const connectionsAPI = {
