@@ -173,11 +173,13 @@ export const ConnectionDesignerPage = () => {
   const handleApproveRedline = async (redlineId, suggestedParams) => {
     try {
       await redlinesAPI.approve(redlineId, suggestedParams);
-      toast.success('Changes applied to connection');
-      loadConnection();
-      loadRedlines();
+      toast.success('Changes approved and applied to connection ✓');
+      await loadConnection();
+      await loadRedlines();
     } catch (error) {
-      toast.error('Failed to apply changes');
+      const errorMsg = error.response?.data?.detail || error.response?.data?.message || 'Failed to apply changes';
+      toast.error(errorMsg);
+      console.error('Approve redline error:', error);
     }
   };
 
