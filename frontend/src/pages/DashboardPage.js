@@ -37,7 +37,7 @@ export const DashboardPage = () => {
             </p>
           </div>
           <Button
-            onClick={() => navigate('/projects/new')}
+            onClick={() => navigate('/projects', { state: { openCreateDialog: true } })}
             className="bg-secondary text-white hover:bg-secondary/90 rounded-sm"
             data-testid="create-project-button"
           >
@@ -60,7 +60,7 @@ export const DashboardPage = () => {
               Create your first project to start designing connections
             </p>
             <Button
-              onClick={() => navigate('/projects/new')}
+              onClick={() => navigate('/projects', { state: { openCreateDialog: true } })}
               className="bg-slate-900 text-white hover:bg-slate-800 rounded-sm"
             >
               Create Project
