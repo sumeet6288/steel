@@ -46,11 +46,11 @@ export const projectsAPI = {
 export const connectionsAPI = {
   create: (data) => api.post('/connections/', data),
   getAll: (projectId) => api.get('/connections/', { params: { project_id: projectId } }),
-  getById: (id) => api.get(`/connections/${id}/`),
-  update: (id, data) => api.put(`/connections/${id}/`, data),
-  validate: (id) => api.post(`/connections/${id}/validate/`),
-  exportTekla: (id) => api.post(`/connections/${id}/export/tekla/`),
-  delete: (id) => api.delete(`/connections/${id}/`),
+  getById: (id) => api.get(`/connections/${id}`),
+  update: (id, data) => api.put(`/connections/${id}`, data),
+  validate: (id) => api.post(`/connections/${id}/validate`),
+  exportTekla: (id) => api.post(`/connections/${id}/export/tekla`),
+  delete: (id) => api.delete(`/connections/${id}`),
 };
 
 export const redlinesAPI = {
