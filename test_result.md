@@ -249,6 +249,33 @@ frontend:
       - working: true
         agent: "main"
         comment: "Fixed missing cn utility function, installed missing dependencies (yarn install), disabled fast refresh to resolve core-js-pure compatibility issues, fixed React Hook dependency warnings with useCallback"
+      - working: true
+        agent: "main"
+        comment: "Fixed craco not found error by installing @craco/craco, updated package.json scripts to use full path ./node_modules/.bin/craco, killed port 3000 conflicts, frontend now compiling successfully"
+  
+  - task: "Fix Dashboard navigation error"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/DashboardPage.js, /app/frontend/src/pages/ProjectsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Fixed navigation issue where Dashboard was trying to navigate to /projects/new which doesn't exist. Updated to navigate to /projects with state to open create dialog. Added useLocation hook in ProjectsPage to check state and open dialog"
+  
+  - task: "Fix linting errors"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/ConnectionDesignerPage.js, /app/frontend/src/pages/LoginPage.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Fixed React unescaped entities errors by replacing quotes with &quot; and apostrophes with &apos;"
 
 metadata:
   created_by: "main_agent"
