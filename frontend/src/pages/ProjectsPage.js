@@ -32,6 +32,7 @@ export const ProjectsPage = () => {
       // Clear the state
       navigate(location.pathname, { replace: true, state: {} });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location]);
 
   const loadProjects = async () => {
