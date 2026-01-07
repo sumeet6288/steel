@@ -1,0 +1,584 @@
+#!/usr/bin/env python3
+"""
+SteelConnect AI Backend API Testing Suite
+Tests all backend APIs including auth, projects, connections, and audit endpoints.
+"""
+
+import requests
+import json
+import sys
+import os
+from datetime import datetime
+
+# Get backend URL from frontend .env file
+BACKEND_URL = "https://continue-dev-23.preview.emergentagent.com/api"
+
+class SteelConnectAPITester:
+    def __init__(self):
+        self.base_url = BACKEND_URL
+        self.token = None
+        self.user_id = None
+        self.project_id = None
+        self.connection_id = None
+        self.test_results = []
+        
+    def log_test(self, test_name, success, message="", response_data=None):
+        """Log test results"""
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {test_name}: {message}")
+        self.test_results.append({
+            "test": test_name,
+            "success": success,
+            "message": message,
+            "response_data": response_data
+        })
+        
+    def test_health_check(self):
+        """Test health check endpoints"""
+        print("\n=== HEALTH CHECK TESTS ===")
+        
+        # Test root endpoint
+        try:
+            response = requests.get(f"{self.base_url}/")
+            if response.status_code == 200:
+                data = response.json()
+                if "SteelConnect AI" in data.get("message", ""):
+                    self.log_test("Root endpoint", True, "API root accessible")
+                else:
+                    self.log_test("Root endpoint", False, "Unexpected response format")
+            else:
+                self.log_test("Root endpoint", False, f"Status code: {response.status_code}")
+        except Exception as e:
+            self.log_test("Root endpoint", False, f"Connection error: {str(e)}")
+            
+        # Test health endpoint
+        try:
+            response = requests.get(f"{self.base_url}/health")
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") == "healthy":
+                    self.log_test("Health check", True, "Service healthy")
+                else:
+                    self.log_test("Health check", False, "Service not healthy")
+            else:
+                self.log_test("Health check", False, f"Status code: {response.status_code}")
+        except Exception as e:
+            self.log_test("Health check", False, f"Connection error: {str(e)}")
+    
+    def test_user_registration(self):
+        """Test user registration"""
+        print("\n=== AUTHENTICATION TESTS ===")
+        
+        # Generate unique email for testing
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        test_email = f"steeltest_{timestamp}@example.com"
+        
+        user_data = {
+            "email": test_email,
+            "password": "SecurePassword123!",
+            "full_name": "Steel Test Engineer",
+            "company": "Test Steel Fabricators Inc."
+        }
+        
+        try:
+            response = requests.post(f"{self.base_url}/auth/register", json=user_data)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("email") == test_email:
+                    self.user_id = data.get("id")
+                    self.log_test("User registration", True, f"User created with ID: {self.user_id}")
+                    return user_data
+                else:
+                    self.log_test("User registration", False, "Invalid response data")
+            else:
+                self.log_test("User registration", False, f"Status code: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_test("User registration", False, f"Error: {str(e)}")
+        
+        return None
+    
+    def test_user_login(self, user_data):
+        """Test user login"""
+        if not user_data:
+            self.log_test("User login", False, "No user data available")
+            return False
+            
+        login_data = {
+            "email": user_data["email"],
+            "password": user_data["password"]
+        }
+        
+        try:
+            response = requests.post(f"{self.base_url}/auth/login", json=login_data)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("access_token"):
+                    self.token = data["access_token"]
+                    self.log_test("User login", True, "Login successful, token received")
+                    return True
+                else:
+                    self.log_test("User login", False, "No access token in response")
+            else:
+                self.log_test("User login", False, f"Status code: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_test("User login", False, f"Error: {str(e)}")
+        
+        return False
+    
+    def test_get_current_user(self):
+        """Test get current user info"""
+        if not self.token:
+            self.log_test("Get current user", False, "No authentication token")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        try:
+            response = requests.get(f"{self.base_url}/auth/me", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("id"):
+                    self.log_test("Get current user", True, f"User info retrieved for ID: {data['id']}")
+                else:
+                    self.log_test("Get current user", False, "No user ID in response")
+            else:
+                self.log_test("Get current user", False, f"Status code: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get current user", False, f"Error: {str(e)}")
+    
+    def test_create_project(self):
+        """Test project creation"""
+        print("\n=== PROJECT TESTS ===")
+        
+        if not self.token:
+            self.log_test("Create project", False, "No authentication token")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        project_data = {
+            "name": "Steel Bridge Connection Test Project",
+            "description": "Test project for validating steel connection APIs",
+            "location": "San Francisco, CA"
+        }
+        
+        try:
+            response = requests.post(f"{self.base_url}/projects", json=project_data, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("id"):
+                    self.project_id = data["id"]
+                    self.log_test("Create project", True, f"Project created with ID: {self.project_id}")
+                else:
+                    self.log_test("Create project", False, "No project ID in response")
+            else:
+                self.log_test("Create project", False, f"Status code: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_test("Create project", False, f"Error: {str(e)}")
+    
+    def test_get_projects(self):
+        """Test get all projects"""
+        if not self.token:
+            self.log_test("Get projects", False, "No authentication token")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        try:
+            response = requests.get(f"{self.base_url}/projects", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test("Get projects", True, f"Retrieved {len(data)} projects")
+                else:
+                    self.log_test("Get projects", False, "Response is not a list")
+            else:
+                self.log_test("Get projects", False, f"Status code: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get projects", False, f"Error: {str(e)}")
+    
+    def test_get_project_by_id(self):
+        """Test get project by ID"""
+        if not self.token or not self.project_id:
+            self.log_test("Get project by ID", False, "No authentication token or project ID")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        try:
+            response = requests.get(f"{self.base_url}/projects/{self.project_id}", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("id") == self.project_id:
+                    self.log_test("Get project by ID", True, "Project retrieved successfully")
+                else:
+                    self.log_test("Get project by ID", False, "Project ID mismatch")
+            else:
+                self.log_test("Get project by ID", False, f"Status code: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get project by ID", False, f"Error: {str(e)}")
+    
+    def test_update_project(self):
+        """Test project update"""
+        if not self.token or not self.project_id:
+            self.log_test("Update project", False, "No authentication token or project ID")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        update_data = {
+            "description": "Updated test project description with additional details"
+        }
+        
+        try:
+            response = requests.put(f"{self.base_url}/projects/{self.project_id}", json=update_data, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                if "Updated" in data.get("description", ""):
+                    self.log_test("Update project", True, "Project updated successfully")
+                else:
+                    self.log_test("Update project", False, "Project description not updated")
+            else:
+                self.log_test("Update project", False, f"Status code: {response.status_code}")
+        except Exception as e:
+            self.log_test("Update project", False, f"Error: {str(e)}")
+    
+    def test_create_connection(self):
+        """Test connection creation"""
+        print("\n=== CONNECTION TESTS ===")
+        
+        if not self.token or not self.project_id:
+            self.log_test("Create connection", False, "No authentication token or project ID")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        connection_data = {
+            "name": "Single Plate Shear Connection SP-01",
+            "connection_type": "single_plate",
+            "project_id": self.project_id,
+            "description": "Single plate shear connection for W24x68 beam",
+            "parameters": {
+                "beam_depth": 24,
+                "beam_flange_width": 9,
+                "beam_flange_thickness": 0.75,
+                "beam_web_thickness": 0.5,
+                "shear_force": 50,
+                "plate_thickness": 0.375,
+                "plate_width": 6,
+                "bolt_diameter": 0.75,
+                "bolt_rows": 3
+            }
+        }
+        
+        try:
+            response = requests.post(f"{self.base_url}/connections", json=connection_data, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("id"):
+                    self.connection_id = data["id"]
+                    self.log_test("Create connection", True, f"Connection created with ID: {self.connection_id}")
+                else:
+                    self.log_test("Create connection", False, "No connection ID in response")
+            else:
+                self.log_test("Create connection", False, f"Status code: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_test("Create connection", False, f"Error: {str(e)}")
+    
+    def test_get_connections(self):
+        """Test get connections by project"""
+        if not self.token or not self.project_id:
+            self.log_test("Get connections", False, "No authentication token or project ID")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        try:
+            response = requests.get(f"{self.base_url}/connections?project_id={self.project_id}", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test("Get connections", True, f"Retrieved {len(data)} connections for project")
+                else:
+                    self.log_test("Get connections", False, "Response is not a list")
+            else:
+                self.log_test("Get connections", False, f"Status code: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get connections", False, f"Error: {str(e)}")
+    
+    def test_get_connection_by_id(self):
+        """Test get connection by ID"""
+        if not self.token or not self.connection_id:
+            self.log_test("Get connection by ID", False, "No authentication token or connection ID")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        try:
+            response = requests.get(f"{self.base_url}/connections/{self.connection_id}", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("id") == self.connection_id:
+                    self.log_test("Get connection by ID", True, "Connection retrieved successfully")
+                else:
+                    self.log_test("Get connection by ID", False, "Connection ID mismatch")
+            else:
+                self.log_test("Get connection by ID", False, f"Status code: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get connection by ID", False, f"Error: {str(e)}")
+    
+    def test_update_connection(self):
+        """Test connection update"""
+        if not self.token or not self.connection_id:
+            self.log_test("Update connection", False, "No authentication token or connection ID")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        update_data = {
+            "parameters": {
+                "beam_depth": 24,
+                "beam_flange_width": 9,
+                "beam_flange_thickness": 0.75,
+                "beam_web_thickness": 0.5,
+                "shear_force": 65,  # Updated shear force
+                "plate_thickness": 0.5,  # Updated plate thickness
+                "plate_width": 6,
+                "bolt_diameter": 0.75,
+                "bolt_rows": 3
+            }
+        }
+        
+        try:
+            response = requests.put(f"{self.base_url}/connections/{self.connection_id}", json=update_data, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("parameters", {}).get("shear_force") == 65:
+                    self.log_test("Update connection", True, "Connection parameters updated successfully")
+                else:
+                    self.log_test("Update connection", False, "Connection parameters not updated correctly")
+            else:
+                self.log_test("Update connection", False, f"Status code: {response.status_code}")
+        except Exception as e:
+            self.log_test("Update connection", False, f"Error: {str(e)}")
+    
+    def test_validate_connection(self):
+        """Test connection validation with AISC rules"""
+        if not self.token or not self.connection_id:
+            self.log_test("Validate connection", False, "No authentication token or connection ID")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        try:
+            response = requests.post(f"{self.base_url}/connections/{self.connection_id}/validate", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") in ["validated", "failed"]:
+                    status = data["status"]
+                    has_geometry = "geometry" in data
+                    self.log_test("Validate connection", True, f"Validation completed with status: {status}, geometry generated: {has_geometry}")
+                else:
+                    self.log_test("Validate connection", False, "Invalid validation response")
+            else:
+                self.log_test("Validate connection", False, f"Status code: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_test("Validate connection", False, f"Error: {str(e)}")
+    
+    def test_export_to_tekla(self):
+        """Test Tekla export"""
+        if not self.token or not self.connection_id:
+            self.log_test("Export to Tekla", False, "No authentication token or connection ID")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        try:
+            response = requests.post(f"{self.base_url}/connections/{self.connection_id}/export/tekla", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("tekla_export") and data.get("format") == "tekla_parametric_json":
+                    self.log_test("Export to Tekla", True, "Tekla export successful")
+                else:
+                    self.log_test("Export to Tekla", False, "Invalid Tekla export response")
+            else:
+                self.log_test("Export to Tekla", False, f"Status code: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_test("Export to Tekla", False, f"Error: {str(e)}")
+    
+    def test_audit_logs(self):
+        """Test audit logging"""
+        print("\n=== AUDIT TESTS ===")
+        
+        if not self.token:
+            self.log_test("Get user audit logs", False, "No authentication token")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test user activity logs
+        try:
+            response = requests.get(f"{self.base_url}/audit/my-activity?limit=50", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test("Get user audit logs", True, f"Retrieved {len(data)} audit log entries")
+                else:
+                    self.log_test("Get user audit logs", False, "Response is not a list")
+            else:
+                self.log_test("Get user audit logs", False, f"Status code: {response.status_code}")
+        except Exception as e:
+            self.log_test("Get user audit logs", False, f"Error: {str(e)}")
+        
+        # Test connection audit trail
+        if self.connection_id:
+            try:
+                response = requests.get(f"{self.base_url}/audit/connection/{self.connection_id}", headers=headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    if isinstance(data, list):
+                        self.log_test("Get connection audit trail", True, f"Retrieved {len(data)} connection audit entries")
+                    else:
+                        self.log_test("Get connection audit trail", False, "Response is not a list")
+                else:
+                    self.log_test("Get connection audit trail", False, f"Status code: {response.status_code}")
+            except Exception as e:
+                self.log_test("Get connection audit trail", False, f"Error: {str(e)}")
+    
+    def test_error_cases(self):
+        """Test error handling"""
+        print("\n=== ERROR HANDLING TESTS ===")
+        
+        if not self.token:
+            self.log_test("Error handling tests", False, "No authentication token")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test invalid project ID
+        try:
+            response = requests.get(f"{self.base_url}/projects/invalid-id", headers=headers)
+            if response.status_code == 404:
+                self.log_test("Invalid project ID error", True, "Correctly returned 404 for invalid project ID")
+            else:
+                self.log_test("Invalid project ID error", False, f"Expected 404, got {response.status_code}")
+        except Exception as e:
+            self.log_test("Invalid project ID error", False, f"Error: {str(e)}")
+        
+        # Test invalid connection ID
+        try:
+            response = requests.get(f"{self.base_url}/connections/invalid-id", headers=headers)
+            if response.status_code == 404:
+                self.log_test("Invalid connection ID error", True, "Correctly returned 404 for invalid connection ID")
+            else:
+                self.log_test("Invalid connection ID error", False, f"Expected 404, got {response.status_code}")
+        except Exception as e:
+            self.log_test("Invalid connection ID error", False, f"Error: {str(e)}")
+        
+        # Test unauthorized access
+        try:
+            response = requests.get(f"{self.base_url}/projects")  # No auth header
+            if response.status_code == 401:
+                self.log_test("Unauthorized access error", True, "Correctly returned 401 for unauthorized access")
+            else:
+                self.log_test("Unauthorized access error", False, f"Expected 401, got {response.status_code}")
+        except Exception as e:
+            self.log_test("Unauthorized access error", False, f"Error: {str(e)}")
+    
+    def cleanup(self):
+        """Clean up test data"""
+        print("\n=== CLEANUP ===")
+        
+        if not self.token:
+            self.log_test("Cleanup", False, "No authentication token")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Delete connection
+        if self.connection_id:
+            try:
+                response = requests.delete(f"{self.base_url}/connections/{self.connection_id}", headers=headers)
+                if response.status_code == 200:
+                    self.log_test("Delete connection", True, "Connection deleted successfully")
+                else:
+                    self.log_test("Delete connection", False, f"Status code: {response.status_code}")
+            except Exception as e:
+                self.log_test("Delete connection", False, f"Error: {str(e)}")
+        
+        # Delete project
+        if self.project_id:
+            try:
+                response = requests.delete(f"{self.base_url}/projects/{self.project_id}", headers=headers)
+                if response.status_code == 200:
+                    self.log_test("Delete project", True, "Project deleted successfully")
+                else:
+                    self.log_test("Delete project", False, f"Status code: {response.status_code}")
+            except Exception as e:
+                self.log_test("Delete project", False, f"Error: {str(e)}")
+    
+    def run_all_tests(self):
+        """Run complete test suite"""
+        print("🔧 SteelConnect AI Backend API Test Suite")
+        print(f"Testing backend at: {self.base_url}")
+        print("=" * 60)
+        
+        # Health checks
+        self.test_health_check()
+        
+        # Authentication flow
+        user_data = self.test_user_registration()
+        if user_data and self.test_user_login(user_data):
+            self.test_get_current_user()
+            
+            # Project management
+            self.test_create_project()
+            self.test_get_projects()
+            self.test_get_project_by_id()
+            self.test_update_project()
+            
+            # Connection management
+            self.test_create_connection()
+            self.test_get_connections()
+            self.test_get_connection_by_id()
+            self.test_update_connection()
+            self.test_validate_connection()
+            self.test_export_to_tekla()
+            
+            # Audit logging
+            self.test_audit_logs()
+            
+            # Error handling
+            self.test_error_cases()
+            
+            # Cleanup
+            self.cleanup()
+        
+        # Print summary
+        self.print_summary()
+    
+    def print_summary(self):
+        """Print test summary"""
+        print("\n" + "=" * 60)
+        print("📊 TEST SUMMARY")
+        print("=" * 60)
+        
+        total_tests = len(self.test_results)
+        passed_tests = sum(1 for result in self.test_results if result["success"])
+        failed_tests = total_tests - passed_tests
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
+        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        
+        if failed_tests > 0:
+            print("\n🚨 FAILED TESTS:")
+            for result in self.test_results:
+                if not result["success"]:
+                    print(f"  • {result['test']}: {result['message']}")
+        
+        print("\n" + "=" * 60)
+        
+        return failed_tests == 0
+
+if __name__ == "__main__":
+    tester = SteelConnectAPITester()
+    success = tester.run_all_tests()
+    sys.exit(0 if success else 1)
