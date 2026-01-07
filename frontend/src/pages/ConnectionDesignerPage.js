@@ -61,11 +61,14 @@ export const ConnectionDesignerPage = () => {
 
   const handleSaveParameters = async () => {
     try {
-      await connectionsAPI.update(connectionId, { parameters });
-      toast.success('Parameters saved');
-      loadConnection();
+      const response = await connectionsAPI.update(connectionId, { parameters });
+      toast.success('Parameters saved successfully ✓');
+      // Reload to get updated connection data
+      await loadConnection();
     } catch (error) {
-      toast.error('Failed to save parameters');
+      const errorMsg = error.response?.data?.detail || error.response?.data?.message || 'Failed to save parameters';
+      toast.error(errorMsg);
+      console.error('Save parameters error:', error);
     }
   };
 
