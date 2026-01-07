@@ -78,6 +78,7 @@ export const ConnectionDesignerPage = () => {
       const response = await connectionsAPI.validate(connectionId);
       
       // The backend returns {status, rule_validation, geometry_validation, geometry}
+      // OR {status: "failed", message, validation_results} when parameters missing
       const validationData = response.data;
       
       // Set validation results properly
@@ -86,8 +87,16 @@ export const ConnectionDesignerPage = () => {
       if (validationData.status === 'validated') {
         toast.success('Connection validated successfully! ✓');
       } else if (validationData.status === 'failed') {
-        const failedChecks = validationData.rule_validation?.checks?.filter(c => c.status === 'FAIL').length || 0;
-        toast.error(`Validation failed: ${failedChecks} rule(s) not met`);
+        // Check if parameter validation failed (no rule_validation object)
+        if (!validationData.rule_validation && validationData.validation_results) {
+          // Parameter validation failed
+          const issues = validationData.validation_results.issues || [];
+          toast.error(`Parameter validation failed: ${issues.length} issue(s) found`);
+        } else {
+          // Rule validation failed
+          const failedChecks = validationData.rule_validation?.checks?.filter(c => c.status === 'fail').length || 0;
+          toast.error(`Validation failed: ${failedChecks} rule(s) not met`);
+        }
       } else {
         toast.warning('Validation completed with warnings');
       }
