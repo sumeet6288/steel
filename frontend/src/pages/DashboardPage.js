@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { projectsAPI } from '../../lib/api';
-import { Button } from '../ui/button';
+import { projectsAPI } from '../lib/api';
+import { Button } from '../components/ui/button';
 import { Plus, FolderKanban } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatDate } from '../../lib/utils';
+import { formatDate } from '../lib/utils';
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
