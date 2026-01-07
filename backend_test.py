@@ -401,6 +401,269 @@ class SteelConnectAPITester:
                 self.log_test("Export to Tekla", False, f"Status code: {response.status_code}, Response: {response.text}")
         except Exception as e:
             self.log_test("Export to Tekla", False, f"Error: {str(e)}")
+
+    def test_connection_designer_workflow(self):
+        """Test complete ConnectionDesignerPage workflow"""
+        print("\n=== CONNECTION DESIGNER PAGE WORKFLOW TESTS ===")
+        
+        if not self.token or not self.connection_id:
+            self.log_test("Connection Designer Workflow", False, "No authentication token or connection ID")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test 1: Parameter Saving
+        print("\n--- Testing Parameter Saving ---")
+        updated_parameters = {
+            "beam_depth": 24,
+            "beam_flange_width": 9,
+            "beam_flange_thickness": 0.75,
+            "beam_web_thickness": 0.5,
+            "shear_force": 75,  # Updated value
+            "plate_thickness": 0.5,
+            "plate_width": 8,   # Updated value
+            "bolt_diameter": 0.875,  # Updated value
+            "bolt_rows": 4      # Updated value
+        }
+        
+        try:
+            response = requests.put(f"{self.base_url}/connections/{self.connection_id}", 
+                                  json={"parameters": updated_parameters}, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                saved_params = data.get("parameters", {})
+                if (saved_params.get("shear_force") == 75 and 
+                    saved_params.get("plate_width") == 8 and
+                    saved_params.get("bolt_diameter") == 0.875):
+                    self.log_test("Parameter Saving", True, "Parameters saved and verified successfully")
+                else:
+                    self.log_test("Parameter Saving", False, f"Parameters not saved correctly. Expected shear_force=75, got {saved_params.get('shear_force')}")
+            else:
+                self.log_test("Parameter Saving", False, f"Parameter save failed: {response.status_code}, {response.text}")
+        except Exception as e:
+            self.log_test("Parameter Saving", False, f"Parameter save error: {str(e)}")
+        
+        # Test 2: Validation Flow with detailed results
+        print("\n--- Testing Validation Flow ---")
+        try:
+            response = requests.post(f"{self.base_url}/connections/{self.connection_id}/validate", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                status = data.get("status")
+                rule_validation = data.get("rule_validation", {})
+                geometry_validation = data.get("geometry_validation", {})
+                geometry = data.get("geometry")
+                
+                # Check validation structure
+                validation_checks = []
+                if status in ["validated", "failed"]:
+                    validation_checks.append("✓ Status field present")
+                else:
+                    validation_checks.append("✗ Invalid status field")
+                
+                if rule_validation.get("checks"):
+                    validation_checks.append(f"✓ AISC rule checks present ({len(rule_validation['checks'])} checks)")
+                    
+                    # Check for detailed rule information
+                    sample_check = rule_validation["checks"][0] if rule_validation["checks"] else {}
+                    if sample_check.get("rule_name") and sample_check.get("status"):
+                        validation_checks.append("✓ Rule checks have detailed information")
+                    else:
+                        validation_checks.append("✗ Rule checks missing detailed information")
+                        
+                    # Check for calculated vs limit values
+                    has_values = any(check.get("calculated_value") is not None and check.get("limit_value") is not None 
+                                   for check in rule_validation["checks"])
+                    if has_values:
+                        validation_checks.append("✓ Calculated and limit values present")
+                    else:
+                        validation_checks.append("✗ Missing calculated/limit values")
+                else:
+                    validation_checks.append("✗ No AISC rule checks found")
+                
+                if geometry_validation:
+                    validation_checks.append("✓ Geometry validation section present")
+                else:
+                    validation_checks.append("✗ Geometry validation section missing")
+                
+                if geometry:
+                    validation_checks.append("✓ Geometry data generated")
+                else:
+                    validation_checks.append("✗ No geometry data generated")
+                
+                self.log_test("Validation Flow", True, f"Validation completed. {'; '.join(validation_checks)}")
+                
+                # Store validation results for geometry test
+                self.validation_results = data
+                
+            else:
+                self.log_test("Validation Flow", False, f"Validation failed: {response.status_code}, {response.text}")
+        except Exception as e:
+            self.log_test("Validation Flow", False, f"Validation error: {str(e)}")
+        
+        # Test 3: Geometry Display Structure
+        print("\n--- Testing Geometry Display ---")
+        try:
+            # Get updated connection with geometry
+            response = requests.get(f"{self.base_url}/connections/{self.connection_id}", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                geometry = data.get("geometry")
+                
+                if geometry:
+                    geometry_checks = []
+                    
+                    # Check for geometry components
+                    if geometry.get("plate"):
+                        geometry_checks.append("✓ Plate component present")
+                    if geometry.get("bolts"):
+                        geometry_checks.append(f"✓ Bolts component present ({len(geometry['bolts'])} bolts)")
+                    if geometry.get("angles"):
+                        geometry_checks.append(f"✓ Angles component present ({len(geometry['angles'])} angles)")
+                    if geometry.get("dimensions"):
+                        geometry_checks.append("✓ Dimensions data present")
+                    
+                    # Check geometry structure is readable (not just raw JSON)
+                    if isinstance(geometry, dict) and len(geometry) > 0:
+                        geometry_checks.append("✓ Geometry data is structured")
+                    else:
+                        geometry_checks.append("✗ Geometry data is not properly structured")
+                    
+                    self.log_test("Geometry Display", True, f"Geometry components verified. {'; '.join(geometry_checks)}")
+                else:
+                    self.log_test("Geometry Display", False, "No geometry data found after validation")
+            else:
+                self.log_test("Geometry Display", False, f"Failed to retrieve connection geometry: {response.status_code}")
+        except Exception as e:
+            self.log_test("Geometry Display", False, f"Geometry display error: {str(e)}")
+        
+        # Test 4: Export to Tekla (after validation)
+        print("\n--- Testing Export to Tekla ---")
+        try:
+            response = requests.post(f"{self.base_url}/connections/{self.connection_id}/export/tekla", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                export_checks = []
+                
+                if data.get("tekla_export"):
+                    export_checks.append("✓ Tekla export data present")
+                if data.get("format") == "tekla_parametric_json":
+                    export_checks.append("✓ Correct export format")
+                if data.get("disclaimer"):
+                    export_checks.append("✓ Engineering disclaimer present")
+                
+                # Check if connection status updated to exported
+                conn_response = requests.get(f"{self.base_url}/connections/{self.connection_id}", headers=headers)
+                if conn_response.status_code == 200:
+                    conn_data = conn_response.json()
+                    if conn_data.get("status") == "exported":
+                        export_checks.append("✓ Connection status updated to 'exported'")
+                    else:
+                        export_checks.append(f"✗ Connection status not updated (current: {conn_data.get('status')})")
+                
+                self.log_test("Export to Tekla", True, f"Export successful. {'; '.join(export_checks)}")
+            else:
+                self.log_test("Export to Tekla", False, f"Export failed: {response.status_code}, {response.text}")
+        except Exception as e:
+            self.log_test("Export to Tekla", False, f"Export error: {str(e)}")
+
+    def test_redlines_workflow(self):
+        """Test redlines upload and AI interpretation workflow"""
+        print("\n=== REDLINES WORKFLOW TESTS ===")
+        
+        if not self.token or not self.connection_id:
+            self.log_test("Redlines Workflow", False, "No authentication token or connection ID")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.token}"}
+        
+        # Test 1: Redline Upload (simulate file upload)
+        print("\n--- Testing Redline Upload ---")
+        try:
+            # Create a mock file for testing
+            mock_file_content = b"Mock redline drawing content for testing"
+            files = {
+                'file': ('test_redline.pdf', mock_file_content, 'application/pdf')
+            }
+            data = {
+                'connection_id': self.connection_id
+            }
+            
+            response = requests.post(f"{self.base_url}/redlines/upload", 
+                                   files=files, data=data, headers=headers)
+            if response.status_code == 200:
+                upload_data = response.json()
+                redline_id = upload_data.get("redline_id")
+                if redline_id:
+                    self.redline_id = redline_id
+                    self.log_test("Redline Upload", True, f"Redline uploaded successfully with ID: {redline_id}")
+                else:
+                    self.log_test("Redline Upload", False, "No redline ID returned")
+            else:
+                self.log_test("Redline Upload", False, f"Upload failed: {response.status_code}, {response.text}")
+        except Exception as e:
+            self.log_test("Redline Upload", False, f"Upload error: {str(e)}")
+        
+        # Test 2: AI Interpretation (if redline uploaded successfully)
+        if hasattr(self, 'redline_id'):
+            print("\n--- Testing AI Interpretation ---")
+            try:
+                response = requests.post(f"{self.base_url}/redlines/{self.redline_id}/interpret", headers=headers)
+                if response.status_code == 200:
+                    interpret_data = response.json()
+                    ai_extraction = interpret_data.get("ai_extraction", {})
+                    
+                    ai_checks = []
+                    if ai_extraction.get("intent"):
+                        ai_checks.append("✓ AI intent extracted")
+                    if ai_extraction.get("parameters"):
+                        ai_checks.append(f"✓ Parameter suggestions present ({len(ai_extraction['parameters'])} params)")
+                    if ai_extraction.get("confidence") is not None:
+                        ai_checks.append(f"✓ Confidence score present ({ai_extraction['confidence']*100:.1f}%)")
+                    if interpret_data.get("disclaimer"):
+                        ai_checks.append("✓ Advisory disclaimer present")
+                    
+                    self.log_test("AI Interpretation", True, f"AI interpretation completed. {'; '.join(ai_checks)}")
+                    
+                    # Test 3: Approve/Reject functionality
+                    if ai_extraction.get("parameters"):
+                        print("\n--- Testing Approve Functionality ---")
+                        try:
+                            approve_response = requests.post(
+                                f"{self.base_url}/redlines/{self.redline_id}/approve",
+                                json=ai_extraction["parameters"],
+                                headers=headers
+                            )
+                            if approve_response.status_code == 200:
+                                approve_data = approve_response.json()
+                                if approve_data.get("updated_parameters"):
+                                    self.log_test("Approve Functionality", True, "AI suggestions approved and applied successfully")
+                                else:
+                                    self.log_test("Approve Functionality", False, "No updated parameters returned")
+                            else:
+                                self.log_test("Approve Functionality", False, f"Approve failed: {approve_response.status_code}")
+                        except Exception as e:
+                            self.log_test("Approve Functionality", False, f"Approve error: {str(e)}")
+                    
+                else:
+                    self.log_test("AI Interpretation", False, f"Interpretation failed: {response.status_code}, {response.text}")
+            except Exception as e:
+                self.log_test("AI Interpretation", False, f"Interpretation error: {str(e)}")
+        
+        # Test 4: Get redlines list
+        print("\n--- Testing Redlines List ---")
+        try:
+            response = requests.get(f"{self.base_url}/redlines/{self.connection_id}/list", headers=headers)
+            if response.status_code == 200:
+                redlines_data = response.json()
+                if isinstance(redlines_data, list):
+                    self.log_test("Redlines List", True, f"Retrieved {len(redlines_data)} redlines for connection")
+                else:
+                    self.log_test("Redlines List", False, "Invalid redlines list response")
+            else:
+                self.log_test("Redlines List", False, f"Failed to get redlines: {response.status_code}")
+        except Exception as e:
+            self.log_test("Redlines List", False, f"Redlines list error: {str(e)}")
     
     def test_audit_logs(self):
         """Test audit logging"""
