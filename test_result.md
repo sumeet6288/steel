@@ -294,6 +294,18 @@ frontend:
       - working: true
         agent: "main"
         comment: "Fixed React unescaped entities errors by replacing quotes with &quot; and apostrophes with &apos;"
+  
+  - task: "Fix API endpoint trailing slashes for FastAPI compatibility"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/lib/api.js, /app/frontend/package.json"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Fixed 307 redirect errors when creating projects. FastAPI was redirecting requests without trailing slashes to versions with trailing slashes. Updated all API endpoints in api.js to include trailing slashes: authAPI, projectsAPI, connectionsAPI, redlinesAPI, auditAPI, aiAPI. Also fixed package.json scripts to use 'craco start' instead of './node_modules/.bin/craco start'. Both frontend and backend now running successfully."
 
 metadata:
   created_by: "main_agent"
@@ -320,3 +332,5 @@ agent_communication:
     message: "Fixed Dashboard errors reported by user: 1) craco not found - installed @craco/craco and updated package.json scripts to use full path, 2) Port 3000 conflicts - killed old processes, 3) Navigation error clicking 'New Project' - fixed DashboardPage to navigate to /projects with state instead of non-existent /projects/new route, 4) Updated ProjectsPage to handle openCreateDialog state from navigation. Frontend compiling successfully. All services running. Ready for testing."
   - agent: "testing"
     message: "Backend API testing completed. All core APIs working correctly: authentication (register/login), projects CRUD, connections CRUD, validation engine with AISC rules, geometry generation, Tekla export, and audit logging. 20/22 tests passed (90.9% success rate). Minor issues: 1) Connection validation failed in initial test due to missing parameters (resolved when proper parameters provided), 2) Unauthorized access returns 403 instead of 401 (minor HTTP status code difference). All critical functionality working properly."
+  - agent: "main"
+    message: "CRITICAL FIX: Resolved project creation errors. User reported issues when creating projects. Root cause was FastAPI 307 redirects for URLs without trailing slashes. Fixed all API endpoints in frontend to include trailing slashes. Also fixed package.json craco script path. Tested backend project creation via curl - working correctly. All services running. Ready for comprehensive UI testing to verify project creation flow works end-to-end."
