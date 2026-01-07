@@ -519,9 +519,9 @@ export const ConnectionDesignerPage = () => {
                   </div>
                 )}
 
-                <Alert className="mt-6 bg-yellow-50 border-yellow-200">
-                  <AlertTriangle className="h-4 w-4 text-yellow-700" />
-                  <AlertDescription className="text-yellow-800 text-xs">
+                <Alert className="mt-6 bg-blue-50 border-blue-200">
+                  <AlertTriangle className="h-4 w-4 text-blue-700" />
+                  <AlertDescription className="text-blue-800 text-xs">
                     <strong>ADVISORY:</strong> AI interpretation is for assistance only. All changes require engineer approval.
                   </AlertDescription>
                 </Alert>
