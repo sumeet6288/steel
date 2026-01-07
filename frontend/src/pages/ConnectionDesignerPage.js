@@ -594,27 +594,128 @@ export const ConnectionDesignerPage = () => {
               <CardHeader>
                 <CardTitle>Connection Geometry</CardTitle>
                 <CardDescription>
-                  3D geometry and component details
+                  3D geometry model and component details
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {!connection.geometry ? (
-                  <Alert>
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      Geometry not generated yet. Validate the connection to generate geometry.
+                  <Alert className="bg-slate-50 border-slate-200">
+                    <AlertTriangle className="h-4 w-4 text-slate-600" />
+                    <AlertDescription className="text-slate-700">
+                      Geometry not generated yet. Click &quot;Validate&quot; button above to generate 3D geometry model.
                     </AlertDescription>
                   </Alert>
                 ) : (
                   <div className="space-y-4">
-                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-sm">
-                      <div className="text-sm text-slate-700">
-                        Geometry data available. Full 3D visualization coming soon.
+                    {/* Geometry Summary */}
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle2 className="text-green-700" size={18} />
+                        <span className="font-semibold text-sm text-green-900">
+                          3D Geometry Model Generated
+                        </span>
                       </div>
-                      <pre className="mt-3 text-xs bg-white p-3 rounded border border-slate-200 overflow-auto max-h-96">
+                      <p className="text-xs text-green-800">
+                        Connection geometry has been calculated and is ready for export to Tekla Structures.
+                      </p>
+                    </div>
+
+                    {/* Geometry Details */}
+                    {connection.geometry.type && (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-sm">
+                        <div className="text-sm font-medium text-slate-900 mb-1">
+                          Geometry Type: <span className="font-normal">{connection.geometry.type}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Dimensions Summary */}
+                    {connection.geometry.dimensions && (
+                      <div className="p-4 bg-white border border-slate-200 rounded-sm">
+                        <h4 className="font-semibold text-sm text-slate-900 mb-3">Overall Dimensions</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {Object.entries(connection.geometry.dimensions).map(([key, value]) => (
+                            <div key={key} className="text-xs">
+                              <span className="text-slate-600">{key.replace(/_/g, ' ')}:</span>
+                              <span className="ml-1 font-medium text-slate-900">
+                                {typeof value === 'number' ? value.toFixed(2) : value}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Components */}
+                    {(connection.geometry.plate || connection.geometry.bolts || connection.geometry.angles) && (
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-sm text-slate-900">Connection Components</h4>
+                        
+                        {connection.geometry.plate && (
+                          <div className="p-3 bg-blue-50 border border-blue-200 rounded-sm">
+                            <div className="font-medium text-sm text-blue-900 mb-2">Plate</div>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              {Object.entries(connection.geometry.plate).map(([key, value]) => (
+                                <div key={key}>
+                                  <span className="text-blue-700">{key}:</span>
+                                  <span className="ml-1 text-blue-900 font-medium">
+                                    {typeof value === 'number' ? value.toFixed(3) : value} in
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {connection.geometry.bolts && connection.geometry.bolts.length > 0 && (
+                          <div className="p-3 bg-purple-50 border border-purple-200 rounded-sm">
+                            <div className="font-medium text-sm text-purple-900 mb-2">
+                              Bolts ({connection.geometry.bolts.length} total)
+                            </div>
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                              {connection.geometry.bolts.map((bolt, idx) => (
+                                <div key={idx} className="text-xs p-2 bg-white rounded border border-purple-100">
+                                  <div className="font-medium text-purple-900 mb-1">Bolt {idx + 1}</div>
+                                  {bolt.position && (
+                                    <div className="text-purple-700">
+                                      Position: x={bolt.position.x?.toFixed(2)}, y={bolt.position.y?.toFixed(2)}, z={bolt.position.z?.toFixed(2)}
+                                    </div>
+                                  )}
+                                  {bolt.diameter && (
+                                    <div className="text-purple-700">Diameter: {bolt.diameter} in</div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {connection.geometry.angles && connection.geometry.angles.length > 0 && (
+                          <div className="p-3 bg-orange-50 border border-orange-200 rounded-sm">
+                            <div className="font-medium text-sm text-orange-900 mb-2">
+                              Angles ({connection.geometry.angles.length} total)
+                            </div>
+                            <div className="text-xs">
+                              {connection.geometry.angles.map((angle, idx) => (
+                                <div key={idx} className="mb-2">
+                                  <strong>Angle {idx + 1}:</strong> {JSON.stringify(angle)}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Raw Geometry Data */}
+                    <details className="p-3 bg-slate-50 border border-slate-200 rounded-sm">
+                      <summary className="cursor-pointer text-sm font-medium text-slate-900 hover:text-slate-700">
+                        View Raw Geometry Data (JSON)
+                      </summary>
+                      <pre className="mt-3 text-xs bg-white p-3 rounded border border-slate-200 overflow-auto max-h-96 font-mono">
                         {JSON.stringify(connection.geometry, null, 2)}
                       </pre>
-                    </div>
+                    </details>
                   </div>
                 )}
               </CardContent>
