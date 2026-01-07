@@ -563,8 +563,8 @@ export const ConnectionDesignerPage = () => {
           </TabsContent>
         </Tabs>
 
-        <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-sm">
-          <p className="text-xs text-yellow-800">
+        <div className="mt-8 p-4 bg-slate-50 border border-slate-200 rounded-sm">
+          <p className="text-xs text-slate-700">
             <strong>ENGINEERING DISCLAIMER:</strong> This is a design assist tool. All outputs require licensed engineer review and approval. Not for stamped drawings.
           </p>
         </div>
