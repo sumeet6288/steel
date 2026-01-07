@@ -246,6 +246,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "MAJOR FIX COMPLETED: 1) Enhanced validation with proper error handling and detailed results display showing AISC 360-16 rules with calculated/limit values, 2) Fixed parameter saving with async reload, 3) Fixed redlines upload/interpret/approve with proper response handling, 4) Enhanced geometry tab with structured component display (plates/bolts/angles), 5) Improved parameters tab with required field indicators, 6) Removed ALL yellow colors (replaced with blue/gray/slate), 7) Added comprehensive error messages and user feedback throughout. All core functionality now working."
+      - working: true
+        agent: "main"
+        comment: "CRITICAL FIXES - Validation Flow: 1) Fixed case sensitivity issue - backend returns lowercase status ('pass','fail','warning') but frontend was checking uppercase ('PASS','FAIL','WARNING'), 2) Enhanced validation handler to properly distinguish between parameter validation failures vs rule validation failures, 3) Added comprehensive UI for parameter validation errors with actionable guidance, 4) Fixed JSX structure issues in validation results display, 5) Validation results now properly show: parameter errors when params missing, AISC rule checks when validation runs, geometry validation status, 6) All validation status checks now case-insensitive. Ready for comprehensive testing."
 
   - task: "AuditLogPage - Audit trail viewer"
     implemented: true
