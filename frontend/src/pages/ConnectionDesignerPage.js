@@ -25,12 +25,7 @@ export const ConnectionDesignerPage = () => {
   const [uploadingRedline, setUploadingRedline] = useState(false);
   const [interpretingRedline, setInterpretingRedline] = useState(null);
 
-  useEffect(() => {
-    loadConnection();
-    loadRedlines();
-  }, [connectionId]);
-
-  const loadConnection = async () => {
+  const loadConnection = useCallback(async () => {
     try {
       const response = await connectionsAPI.getById(connectionId);
       setConnection(response.data);
@@ -44,16 +39,21 @@ export const ConnectionDesignerPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [connectionId, navigate]);
 
-  const loadRedlines = async () => {
+  const loadRedlines = useCallback(async () => {
     try {
       const response = await redlinesAPI.getByConnection(connectionId);
       setRedlines(response.data);
     } catch (error) {
       console.error('Failed to load redlines:', error);
     }
-  };
+  }, [connectionId]);
+
+  useEffect(() => {
+    loadConnection();
+    loadRedlines();
+  }, [loadConnection, loadRedlines]);
 
   const handleParameterChange = (key, value) => {
     setParameters({ ...parameters, [key]: value });
