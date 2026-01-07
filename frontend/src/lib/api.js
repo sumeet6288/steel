@@ -57,13 +57,13 @@ export const redlinesAPI = {
   upload: (connectionId, file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post(`/redlines/upload/?connection_id=${connectionId}`, formData, {
+    return api.post(`/redlines/upload?connection_id=${connectionId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
-  interpret: (redlineId) => api.post(`/redlines/${redlineId}/interpret/`),
-  approve: (redlineId, params) => api.post(`/redlines/${redlineId}/approve/`, params),
-  getByConnection: (connectionId) => api.get(`/redlines/${connectionId}/list/`),
+  interpret: (redlineId) => api.post(`/redlines/${redlineId}/interpret`),
+  approve: (redlineId, params) => api.post(`/redlines/${redlineId}/approve`, params),
+  getByConnection: (connectionId) => api.get(`/redlines/${connectionId}/list`),
 };
 
 export const auditAPI = {
