@@ -1,0 +1,127 @@
+{
+  "identity": {
+    "name": "SteelConnect AI",
+    "persona": "The Digital Architect",
+    "vibe": "Precision, Authority, Industrial Safety, Deterministic",
+    "metaphor": "A high-end structural engineering workshop. Clean, organized, tools in their place."
+  },
+  "typography": {
+    "primary_font": "Manrope",
+    "secondary_font": "Inter",
+    "mono_font": "JetBrains Mono",
+    "scale": {
+      "h1": "text-4xl font-bold tracking-tight text-slate-900",
+      "h2": "text-2xl font-semibold tracking-tight text-slate-900",
+      "h3": "text-xl font-medium text-slate-800",
+      "body": "text-sm leading-relaxed text-slate-600",
+      "label": "text-xs font-semibold uppercase tracking-wider text-slate-500",
+      "code": "font-mono text-xs text-slate-700 bg-slate-100 px-1 py-0.5 rounded-sm"
+    },
+    "import_statement": "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap');"
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "DEFAULT": "#0F172A",
+        "foreground": "#F8FAFC",
+        "description": "Slate 900 - The color of heavy steel and authority."
+      },
+      "secondary": {
+        "DEFAULT": "#F97316",
+        "foreground": "#FFFFFF",
+        "description": "Safety Orange - Used for primary actions, alerts, and 'Work in Progress' indicators."
+      },
+      "accent": {
+        "DEFAULT": "#0EA5E9",
+        "foreground": "#FFFFFF",
+        "description": "Blueprint Blue - Used for selection states, active tabs, and information."
+      },
+      "background": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "border": "#E2E8F0",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444"
+    },
+    "usage_rules": [
+      "NEVER use gradients for backgrounds. Use solid, matte colors.",
+      "Use 'Safety Orange' sparingly - only for the most important button on the screen or critical warnings.",
+      "Data tables should use alternating row colors (zebra striping) for readability: 'even:bg-slate-50/50'.",
+      "Input fields must have a distinct border: 'border-slate-300 focus:border-blue-500'."
+    ]
+  },
+  "layout": {
+    "spacing_system": "Generous but dense. Use 'gap-4' for data grids, 'gap-8' for page sections.",
+    "grid_system": "The Control Room Grid. Dashboard widgets should snap to a 4-column grid.",
+    "container_style": "Card-based but sharp. 'rounded-sm border border-slate-200 shadow-sm bg-white'.",
+    "page_structure": {
+      "dashboard": "Sidebar navigation (fixed left) + Main Content Area (scrollable).",
+      "connection_designer": "Split View: Left Panel (30%) for Parameters (Scrollable), Right Panel (70%) for Visualization (Sticky/Fixed).",
+      "redline_interpreter": "Split View: Left (PDF Viewer), Right (AI Extraction Form)."
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-slate-900 text-white hover:bg-slate-800 rounded-sm font-medium shadow-sm",
+      "secondary": "bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 rounded-sm font-medium",
+      "destructive": "bg-red-600 text-white hover:bg-red-700 rounded-sm font-medium",
+      "ghost": "hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-sm"
+    },
+    "cards": {
+      "style": "bg-white border border-slate-200 rounded-sm shadow-sm p-6",
+      "header": "border-b border-slate-100 pb-4 mb-4"
+    },
+    "inputs": {
+      "style": "h-9 rounded-sm border-slate-300 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-sm"
+    },
+    "badges": {
+      "style": "rounded-full px-2.5 py-0.5 text-xs font-semibold border",
+      "variants": {
+        "default": "bg-slate-100 text-slate-800 border-slate-200",
+        "success": "bg-green-50 text-green-700 border-green-200",
+        "warning": "bg-yellow-50 text-yellow-700 border-yellow-200",
+        "error": "bg-red-50 text-red-700 border-red-200"
+      }
+    }
+  },
+  "visual_enhancers": {
+    "textures": [
+      "Subtle Grid Background: 'bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]'"
+    ],
+    "micro_interactions": [
+      "Hover states on table rows: 'hover:bg-slate-50'",
+      "Focus rings on inputs must be sharp and distinct."
+    ],
+    "icons": "Lucide React. Use thin strokes (stroke-width={1.5}) for a technical feel."
+  },
+  "images": {
+    "login_hero": {
+      "url": "https://images.unsplash.com/photo-1762584345845-f1cf77e1f28c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHxzdGVlbCUyMGNvbnN0cnVjdGlvbiUyMHNpdGUlMjBza3lzY3JhcGVyfGVufDB8fHx8MTc2Nzc3MzYxOHww&ixlib=rb-4.1.0&q=85",
+      "alt": "Steel skyscraper under construction",
+      "usage": "Full height split-screen on Login/Register pages."
+    },
+    "dashboard_empty_state": {
+      "url": "https://images.unsplash.com/photo-1610650394144-a778795cf585?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwxfHxzdHJ1Y3R1cmFsJTIwZW5naW5lZXIlMjBibHVlcHJpbnQlMjBjbG9zZSUyMHVwfGVufDB8fHx8MTc2Nzc3MzYyMHww&ixlib=rb-4.1.0&q=85",
+      "alt": "Blueprint texture",
+      "usage": "Subtle background or empty state illustration."
+    }
+  },
+  "universal_guidelines": [
+    "CRITICAL: All interactive elements MUST have a 'data-testid' attribute.",
+    "CRITICAL: Do not use 'Inter' for Headings. Use 'Manrope'.",
+    "CRITICAL: Radius should be small (rounded-sm or 4px) to convey precision.",
+    "CRITICAL: Use 'sonner' for toasts.",
+    "CRITICAL: Use 'recharts' for any charts.",
+    "CRITICAL: Ensure high contrast. This is an engineering tool, legibility is paramount.",
+    "CRITICAL: When displaying engineering values (e.g., '24.5 kips'), use the Mono font.",
+    "CRITICAL: 'AI Suggestions' must be visually distinct from 'Verified Values'. Use a purple or blue tint/badge for AI suggestions."
+  ],
+  "instructions_to_main_agent": [
+    "1. Install fonts: Manrope, Inter, JetBrains Mono.",
+    "2. Update tailwind.config.js with the new colors and radius.",
+    "3. Create a 'Layout' component that handles the Sidebar + Main Content structure.",
+    "4. Build the 'Connection Designer' with a resizable split-pane if possible, or a fixed grid.",
+    "5. Use the provided image URLs for the Login page.",
+    "6. Ensure the 'Redline Interpreter' page has a clear 'Upload -> Process -> Review' workflow."
+  ]
+}
