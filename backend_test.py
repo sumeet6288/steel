@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Get backend URL from frontend .env file
-BACKEND_URL = "https://connect-check-6.preview.emergentagent.com/api"
+BACKEND_URL = "https://connection-check-2.preview.emergentagent.com/api"
 
 class SteelConnectAPITester:
     def __init__(self):
