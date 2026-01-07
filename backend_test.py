@@ -804,6 +804,10 @@ class SteelConnectAPITester:
             self.test_validate_connection()
             self.test_export_to_tekla()
             
+            # ConnectionDesignerPage specific workflow tests
+            self.test_connection_designer_workflow()
+            self.test_redlines_workflow()
+            
             # Audit logging
             self.test_audit_logs()
             
