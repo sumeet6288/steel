@@ -24,11 +24,7 @@ export const ProjectDetailPage = () => {
     description: ''
   });
 
-  useEffect(() => {
-    loadData();
-  }, [projectId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [projectRes, connectionsRes] = await Promise.all([
         projectsAPI.getById(projectId),
@@ -42,7 +38,11 @@ export const ProjectDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId, navigate]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleCreateConnection = async (e) => {
     e.preventDefault();
