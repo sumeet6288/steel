@@ -184,7 +184,7 @@ class SteelConnectAPITester:
         headers = {"Authorization": f"Bearer {self.token}"}
         
         try:
-            response = requests.get(f"{self.base_url}/projects", headers=headers)
+            response = requests.get(f"{self.base_url}/projects/", headers=headers)
             if response.status_code == 200:
                 data = response.json()
                 if isinstance(data, list):
