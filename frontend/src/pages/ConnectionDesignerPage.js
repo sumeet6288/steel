@@ -73,15 +73,28 @@ export const ConnectionDesignerPage = () => {
     setValidating(true);
     try {
       const response = await connectionsAPI.validate(connectionId);
-      setValidationResults(response.data);
-      if (response.data.status === 'validated') {
-        toast.success('Connection validated successfully!');
+      
+      // The backend returns {status, rule_validation, geometry_validation, geometry}
+      const validationData = response.data;
+      
+      // Set validation results properly
+      setValidationResults(validationData);
+      
+      if (validationData.status === 'validated') {
+        toast.success('Connection validated successfully! ✓');
+      } else if (validationData.status === 'failed') {
+        const failedChecks = validationData.rule_validation?.checks?.filter(c => c.status === 'FAIL').length || 0;
+        toast.error(`Validation failed: ${failedChecks} rule(s) not met`);
       } else {
-        toast.warning('Connection validation failed. Check rule checks.');
+        toast.warning('Validation completed with warnings');
       }
-      loadConnection();
+      
+      // Reload connection to get updated status and geometry
+      await loadConnection();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Validation failed');
+      const errorMsg = error.response?.data?.detail || error.response?.data?.message || 'Validation failed';
+      toast.error(errorMsg);
+      console.error('Validation error:', error);
     } finally {
       setValidating(false);
     }
