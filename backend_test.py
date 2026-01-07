@@ -473,7 +473,7 @@ class SteelConnectAPITester:
         
         # Test unauthorized access
         try:
-            response = requests.get(f"{self.base_url}/projects")  # No auth header
+            response = requests.get(f"{self.base_url}/projects/")  # No auth header
             if response.status_code == 401:
                 self.log_test("Unauthorized access error", True, "Correctly returned 401 for unauthorized access")
             else:
