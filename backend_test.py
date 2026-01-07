@@ -269,7 +269,7 @@ class SteelConnectAPITester:
         }
         
         try:
-            response = requests.post(f"{self.base_url}/connections", json=connection_data, headers=headers)
+            response = requests.post(f"{self.base_url}/connections/", json=connection_data, headers=headers)
             if response.status_code == 200:
                 data = response.json()
                 if data.get("id"):
