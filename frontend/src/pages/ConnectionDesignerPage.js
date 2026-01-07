@@ -319,23 +319,26 @@ export const ConnectionDesignerPage = () => {
               <CardHeader>
                 <CardTitle>Validation Results</CardTitle>
                 <CardDescription>
-                  AISC 360 rule checks and validation status
+                  AISC 360-16 rule checks and validation status
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {!validationResults ? (
-                  <Alert>
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      Connection has not been validated yet. Click &quot;Validate&quot; to run AISC 360 checks.
+                  <Alert className="bg-slate-50 border-slate-200">
+                    <AlertTriangle className="h-4 w-4 text-slate-600" />
+                    <AlertDescription className="text-slate-700">
+                      Connection has not been validated yet. Click &quot;Validate&quot; button above to run AISC 360-16 checks.
                     </AlertDescription>
                   </Alert>
                 ) : (
                   <div className="space-y-4">
+                    {/* Overall Status */}
                     <div className={`p-4 rounded-sm border ${
                       validationResults.status === 'validated' 
                         ? 'bg-green-50 border-green-200' 
-                        : 'bg-red-50 border-red-200'
+                        : validationResults.status === 'failed'
+                        ? 'bg-red-50 border-red-200'
+                        : 'bg-orange-50 border-orange-200'
                     }`}>
                       <div className="flex items-center gap-2 mb-2">
                         {validationResults.status === 'validated' ? (
@@ -345,39 +348,95 @@ export const ConnectionDesignerPage = () => {
                         )}
                         <span className="font-semibold text-sm">
                           {validationResults.status === 'validated' 
-                            ? 'Connection Validated' 
-                            : 'Validation Failed'}
+                            ? 'Connection Validated - Meets AISC 360-16 Requirements' 
+                            : 'Validation Failed - Does Not Meet Requirements'}
                         </span>
                       </div>
                       {validationResults.rule_validation?.summary && (
-                        <p className="text-sm text-slate-700">{validationResults.rule_validation.summary}</p>
+                        <p className="text-sm text-slate-700 mt-2">{validationResults.rule_validation.summary}</p>
                       )}
                     </div>
 
-                    {validationResults.rule_validation?.checks && (
-                      <div className="space-y-2">
-                        <h3 className="font-semibold text-sm text-slate-900 mb-3">Rule Checks</h3>
+                    {/* Rule Checks */}
+                    {validationResults.rule_validation?.checks && validationResults.rule_validation.checks.length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-sm text-slate-900 mb-3">
+                          AISC 360-16 Rule Checks ({validationResults.rule_validation.checks.length} total)
+                        </h3>
                         {validationResults.rule_validation.checks.map((check, idx) => (
                           <div
                             key={idx}
                             className={`p-3 rounded-sm border text-sm ${getRuleStatusColor(check.status)}`}
                           >
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <div className="font-medium">{check.rule_name}</div>
-                                <div className="text-xs mt-1">{check.message}</div>
-                                {check.reference && (
-                                  <div className="text-xs mt-1 opacity-75">
-                                    Reference: {check.reference}
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{check.rule_name}</span>
+                                  <Badge className={`text-xs ${
+                                    check.status === 'PASS' ? 'bg-green-100 text-green-700' :
+                                    check.status === 'FAIL' ? 'bg-red-100 text-red-700' :
+                                    'bg-orange-100 text-orange-700'
+                                  }`}>
+                                    {check.status}
+                                  </Badge>
+                                </div>
+                                <div className="text-xs mt-1 text-slate-600">{check.message}</div>
+                                {check.code_reference && (
+                                  <div className="text-xs mt-1 font-mono text-slate-500">
+                                    📖 {check.code_reference}
+                                  </div>
+                                )}
+                                {(check.calculated_value !== undefined && check.limit_value !== undefined) && (
+                                  <div className="text-xs mt-2 flex gap-4">
+                                    <span>Calculated: <strong>{check.calculated_value.toFixed(2)}</strong></span>
+                                    <span>Limit: <strong>{check.limit_value.toFixed(2)}</strong></span>
                                   </div>
                                 )}
                               </div>
-                              <Badge className={`text-xs ${getRuleStatusColor(check.status)}`}>
-                                {check.status}
-                              </Badge>
                             </div>
                           </div>
                         ))}
+                      </div>
+                    )}
+
+                    {/* Geometry Validation */}
+                    {validationResults.geometry_validation && (
+                      <div className="p-4 bg-slate-50 border border-slate-200 rounded-sm">
+                        <h3 className="font-semibold text-sm text-slate-900 mb-2">Geometry Validation</h3>
+                        <div className="text-sm text-slate-700">
+                          <div className="flex items-center gap-2 mb-2">
+                            {validationResults.geometry_validation.is_valid ? (
+                              <CheckCircle2 className="text-green-600" size={16} />
+                            ) : (
+                              <XCircle className="text-red-600" size={16} />
+                            )}
+                            <span>
+                              {validationResults.geometry_validation.is_valid 
+                                ? 'Geometry is valid' 
+                                : 'Geometry has issues'}
+                            </span>
+                          </div>
+                          {validationResults.geometry_validation.issues?.length > 0 && (
+                            <div className="mt-2">
+                              <strong className="text-xs">Issues:</strong>
+                              <ul className="list-disc list-inside text-xs mt-1">
+                                {validationResults.geometry_validation.issues.map((issue, i) => (
+                                  <li key={i} className="text-red-700">{issue}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {validationResults.geometry_validation.warnings?.length > 0 && (
+                            <div className="mt-2">
+                              <strong className="text-xs">Warnings:</strong>
+                              <ul className="list-disc list-inside text-xs mt-1">
+                                {validationResults.geometry_validation.warnings.map((warning, i) => (
+                                  <li key={i} className="text-orange-700">{warning}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
