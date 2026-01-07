@@ -363,37 +363,67 @@ export const ConnectionDesignerPage = () => {
                   </Alert>
                 ) : (
                   <div className="space-y-4">
-                    {/* Overall Status */}
-                    <div className={`p-4 rounded-sm border ${
-                      validationResults.status === 'validated' 
-                        ? 'bg-green-50 border-green-200' 
-                        : validationResults.status === 'failed'
-                        ? 'bg-red-50 border-red-200'
-                        : 'bg-orange-50 border-orange-200'
-                    }`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        {validationResults.status === 'validated' ? (
-                          <CheckCircle2 className="text-green-700" size={20} />
-                        ) : (
+                    {/* Parameter Validation Failed */}
+                    {validationResults.status === 'failed' && validationResults.validation_results && (
+                      <div className="p-4 rounded-sm border bg-red-50 border-red-200">
+                        <div className="flex items-center gap-2 mb-2">
                           <XCircle className="text-red-700" size={20} />
+                          <span className="font-semibold text-sm text-red-900">
+                            Parameter Validation Failed
+                          </span>
+                        </div>
+                        <p className="text-sm text-red-800 mb-3">
+                          {validationResults.message || 'Required parameters are missing or invalid'}
+                        </p>
+                        {validationResults.validation_results.issues && validationResults.validation_results.issues.length > 0 && (
+                          <div className="bg-white rounded p-3 border border-red-200">
+                            <div className="text-xs font-medium text-red-900 mb-2">Issues Found:</div>
+                            <ul className="list-disc list-inside text-xs space-y-1">
+                              {validationResults.validation_results.issues.map((issue, i) => (
+                                <li key={i} className="text-red-700">{issue}</li>
+                              ))}
+                            </ul>
+                          </div>
                         )}
-                        <span className="font-semibold text-sm">
-                          {validationResults.status === 'validated' 
-                            ? 'Connection Validated - Meets AISC 360-16 Requirements' 
-                            : 'Validation Failed - Does Not Meet Requirements'}
-                        </span>
+                        <div className="mt-3 text-xs text-red-800">
+                          💡 <strong>Action Required:</strong> Go to Parameters tab, fill in all required fields marked with *, then click Save Parameters before validating.
+                        </div>
                       </div>
-                      {validationResults.rule_validation?.summary && (
-                        <p className="text-sm text-slate-700 mt-2">{validationResults.rule_validation.summary}</p>
-                      )}
-                    </div>
+                    )}
 
-                    {/* Rule Checks */}
-                    {validationResults.rule_validation?.checks && validationResults.rule_validation.checks.length > 0 && (
-                      <div className="space-y-3">
-                        <h3 className="font-semibold text-sm text-slate-900 mb-3">
-                          AISC 360-16 Rule Checks ({validationResults.rule_validation.checks.length} total)
-                        </h3>
+                    {/* Overall Status for Rule Validation */}
+                    {validationResults.rule_validation && (
+                      <>
+                        <div className={`p-4 rounded-sm border ${
+                          validationResults.status === 'validated' 
+                            ? 'bg-green-50 border-green-200' 
+                            : validationResults.status === 'failed'
+                            ? 'bg-red-50 border-red-200'
+                            : 'bg-orange-50 border-orange-200'
+                        }`}>
+                          <div className="flex items-center gap-2 mb-2">
+                            {validationResults.status === 'validated' ? (
+                              <CheckCircle2 className="text-green-700" size={20} />
+                            ) : (
+                              <XCircle className="text-red-700" size={20} />
+                            )}
+                            <span className="font-semibold text-sm">
+                              {validationResults.status === 'validated' 
+                                ? 'Connection Validated - Meets AISC 360-16 Requirements' 
+                                : 'Validation Failed - Does Not Meet Requirements'}
+                            </span>
+                          </div>
+                          {validationResults.rule_validation.summary && (
+                            <p className="text-sm text-slate-700 mt-2">{validationResults.rule_validation.summary}</p>
+                          )}
+                        </div>
+
+                        {/* Rule Checks */}
+                        {validationResults.rule_validation.checks && validationResults.rule_validation.checks.length > 0 && (
+                          <div className="space-y-3">
+                            <h3 className="font-semibold text-sm text-slate-900 mb-3">
+                              AISC 360-16 Rule Checks ({validationResults.rule_validation.checks.length} total)
+                            </h3>
                         {validationResults.rule_validation.checks.map((check, idx) => (
                           <div
                             key={idx}
