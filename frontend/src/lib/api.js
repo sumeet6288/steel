@@ -30,9 +30,9 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
-  register: (data) => api.post('/auth/register', data),
-  login: (data) => api.post('/auth/login', data),
-  getMe: () => api.get('/auth/me'),
+  register: (data) => api.post('/auth/register/', data),
+  login: (data) => api.post('/auth/login/', data),
+  getMe: () => api.get('/auth/me/'),
 };
 
 export const projectsAPI = {
@@ -44,36 +44,36 @@ export const projectsAPI = {
 };
 
 export const connectionsAPI = {
-  create: (data) => api.post('/connections', data),
-  getAll: (projectId) => api.get('/connections', { params: { project_id: projectId } }),
-  getById: (id) => api.get(`/connections/${id}`),
-  update: (id, data) => api.put(`/connections/${id}`, data),
-  validate: (id) => api.post(`/connections/${id}/validate`),
-  exportTekla: (id) => api.post(`/connections/${id}/export/tekla`),
-  delete: (id) => api.delete(`/connections/${id}`),
+  create: (data) => api.post('/connections/', data),
+  getAll: (projectId) => api.get('/connections/', { params: { project_id: projectId } }),
+  getById: (id) => api.get(`/connections/${id}/`),
+  update: (id, data) => api.put(`/connections/${id}/`, data),
+  validate: (id) => api.post(`/connections/${id}/validate/`),
+  exportTekla: (id) => api.post(`/connections/${id}/export/tekla/`),
+  delete: (id) => api.delete(`/connections/${id}/`),
 };
 
 export const redlinesAPI = {
   upload: (connectionId, file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post(`/redlines/upload?connection_id=${connectionId}`, formData, {
+    return api.post(`/redlines/upload/?connection_id=${connectionId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
-  interpret: (redlineId) => api.post(`/redlines/${redlineId}/interpret`),
-  approve: (redlineId, params) => api.post(`/redlines/${redlineId}/approve`, params),
-  getByConnection: (connectionId) => api.get(`/redlines/${connectionId}/list`),
+  interpret: (redlineId) => api.post(`/redlines/${redlineId}/interpret/`),
+  approve: (redlineId, params) => api.post(`/redlines/${redlineId}/approve/`, params),
+  getByConnection: (connectionId) => api.get(`/redlines/${connectionId}/list/`),
 };
 
 export const auditAPI = {
-  getConnectionAudit: (connectionId) => api.get(`/audit/connection/${connectionId}`),
-  getMyActivity: (limit = 50) => api.get(`/audit/my-activity`, { params: { limit } }),
+  getConnectionAudit: (connectionId) => api.get(`/audit/connection/${connectionId}/`),
+  getMyActivity: (limit = 50) => api.get(`/audit/my-activity/`, { params: { limit } }),
 };
 
 export const aiAPI = {
-  suggestConnection: (requirements) => api.post('/ai/suggest-connection', requirements),
-  generateRFI: (connectionData, issue) => api.post('/ai/generate-rfi', { connection_data: connectionData, issue }),
+  suggestConnection: (requirements) => api.post('/ai/suggest-connection/', requirements),
+  generateRFI: (connectionData, issue) => api.post('/ai/generate-rfi/', { connection_data: connectionData, issue }),
 };
 
 export default api;
