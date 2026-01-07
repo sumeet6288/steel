@@ -131,13 +131,17 @@ export const ConnectionDesignerPage = () => {
     setUploadingRedline(true);
     try {
       const response = await redlinesAPI.upload(connectionId, file);
-      toast.success('Redline uploaded successfully');
-      loadRedlines();
+      toast.success('Redline uploaded successfully ✓');
+      await loadRedlines();
       
       // Auto-interpret after upload
-      await handleInterpretRedline(response.data.redline_id);
+      if (response.data && response.data.redline_id) {
+        await handleInterpretRedline(response.data.redline_id);
+      }
     } catch (error) {
-      toast.error('Failed to upload redline');
+      const errorMsg = error.response?.data?.detail || error.response?.data?.message || 'Failed to upload redline';
+      toast.error(errorMsg);
+      console.error('Redline upload error:', error);
     } finally {
       setUploadingRedline(false);
     }
