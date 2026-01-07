@@ -457,8 +457,8 @@ export const ConnectionDesignerPage = () => {
                             </div>
                           </div>
                         ))}
-                      </div>
-                    )}
+                          </div>
+                        )}
 
                     {/* Geometry Validation */}
                     {validationResults.geometry_validation && (
