@@ -67,8 +67,8 @@ export const redlinesAPI = {
 };
 
 export const auditAPI = {
-  getConnectionAudit: (connectionId) => api.get(`/audit/connection/${connectionId}/`),
-  getMyActivity: (limit = 50) => api.get(`/audit/my-activity/`, { params: { limit } }),
+  getConnectionAudit: (connectionId) => api.get(`/audit/connection/${connectionId}`),
+  getMyActivity: (limit = 50) => api.get(`/audit/my-activity`, { params: { limit } }),
 };
 
 export const aiAPI = {
