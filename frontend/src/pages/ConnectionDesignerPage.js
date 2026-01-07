@@ -151,15 +151,20 @@ export const ConnectionDesignerPage = () => {
     setInterpretingRedline(redlineId);
     try {
       const response = await redlinesAPI.interpret(redlineId);
-      toast.success('AI interpretation complete');
-      loadRedlines();
+      toast.success('AI interpretation complete ✓');
+      await loadRedlines();
       
       // Show AI suggestions
-      if (response.data.ai_extraction) {
-        toast.info('AI has suggested parameter changes. Review in Redlines tab.');
+      if (response.data && response.data.ai_extraction && response.data.ai_extraction.parameters) {
+        const paramCount = Object.keys(response.data.ai_extraction.parameters).length;
+        if (paramCount > 0) {
+          toast.info(`AI suggested ${paramCount} parameter change(s). Review in Redlines tab.`);
+        }
       }
     } catch (error) {
-      toast.error('AI interpretation failed');
+      const errorMsg = error.response?.data?.detail || error.response?.data?.message || 'AI interpretation failed';
+      toast.error(errorMsg);
+      console.error('AI interpretation error:', error);
     } finally {
       setInterpretingRedline(null);
     }
